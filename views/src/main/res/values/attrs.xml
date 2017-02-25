@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="SwipeBackLayout">
+        <attr name="contentView" format="reference" />
+        <attr name="shadowColor" format="color|reference"/>
+        <attr name="dragDirection">
+            <flag name="left" value="0x1"/>
+            <flag name="up" value="0x2"/>
+            <flag name="right" value="0x4"/>
+            <flag name="down" value="0x8"/>
+        </attr>
+    </declare-styleable>
+</resources>
