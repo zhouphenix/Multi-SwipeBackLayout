@@ -8,6 +8,17 @@
  * 使用说明
 
 ## 使用
+**step1** 主题style.xml中配置一下属性
+
+    <item name="android:windowIsTranslucent">true</item>
+    <item name="android:windowBackground">@android:color/transparent</item>
+**step2** 布局相应位置节点设置背景色属性， 如： android:background="@android:color/white"
+**step3** 如下例子中的代码，或者你可以通过xml配置使用
+
+            app:contentView="@layout/..."
+            app:shadowColor="@color| #ffffff"
+            app:dragDirection="left|up|right|down"
+
 
 ## 例子
 
@@ -45,7 +56,19 @@
             return false;
         }
 
-
+## download
+    allprojects {
+		repositories {
+			...
+			maven { url 'https://jitpack.io' }
+		}
+	}
+    -----------------------------------------------------------
+    dependencies {
+	        compile 'com.github.zhouphenix:Multi-SwipeBackLayout:1.0'
+	}
+## exclude
+    compile 'com.android.support:recyclerview-v7:25.2.0'
 
 
 不多说，直接上图

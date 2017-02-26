@@ -24,7 +24,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 /**
- * TODO 两个方向以下能保持良好体验
  *
  * @author zhouphenix on 2017-2-23.
  *         <p>
@@ -56,18 +55,18 @@ import java.lang.annotation.RetentionPolicy;
  *         public void setContentView(View view) {
  *         SwipeBackLayout swipeBackLayout = new SwipeBackLayout(this, view, SwipeBackLayout.UP | SwipeBackLayout.LEFT);
  *         swipeBackLayout.setOnSwipeBackListener(new SwipeBackLayout.OnSwipeBackListener() {
- *          @Override public boolean onIntercept(@SwipeBackLayout.DragDirection int direction) {
- *          return onSwipeBack(direction);
- *          }
- *          @Override public void onViewPositionChanged(float fraction) {
- *          }
- *          @Override public void onAnimationEnd() {
- *          finish();
- *          overridePendingTransition(0, android.R.anim.fade_out);
- *          }
- *          });
- *          super.setContentView(swipeBackLayout);
- *             }
+ * @Override public boolean onIntercept(@SwipeBackLayout.DragDirection int direction) {
+ * return onSwipeBack(direction);
+ * }
+ * @Override public void onViewPositionChanged(float fraction) {
+ * }
+ * @Override public void onAnimationEnd() {
+ * finish();
+ * overridePendingTransition(0, android.R.anim.fade_out);
+ * }
+ * });
+ * super.setContentView(swipeBackLayout);
+ * }
  */
 public class SwipeBackLayout extends FrameLayout {
 
@@ -274,6 +273,7 @@ public class SwipeBackLayout extends FrameLayout {
     /**
      * Find out the scrollable child view
      * 这里添加了常用的一些可滑动类，特殊类需要添加
+     *
      * @param target targetView
      */
     private void findScrollView(ViewGroup target) {
@@ -282,15 +282,15 @@ public class SwipeBackLayout extends FrameLayout {
             for (int i = 0; i < count; i++) {
                 final View child = target.getChildAt(i);
                 if (child instanceof AbsListView
-                        || isInstanceOfClass(child , ScrollView.class.getName())
-                        || isInstanceOfClass(child , NestedScrollView.class.getName())
-                        || isInstanceOfClass(child , RecyclerView.class.getName())
+                        || isInstanceOfClass(child, ScrollView.class.getName())
+                        || isInstanceOfClass(child, NestedScrollView.class.getName())
+                        || isInstanceOfClass(child, RecyclerView.class.getName())
                         || child instanceof HorizontalScrollView
                         || child instanceof ViewPager
-                        || child instanceof WebView){
+                        || child instanceof WebView) {
                     mScrollChild = child;
                     break;
-                }else if (child instanceof ViewGroup){
+                } else if (child instanceof ViewGroup) {
                     findScrollView((ViewGroup) child);
                 }
             }
@@ -300,7 +300,7 @@ public class SwipeBackLayout extends FrameLayout {
     }
 
 
-    private boolean isInstanceOfClass(Object o1, String className){
+    private boolean isInstanceOfClass(Object o1, String className) {
         return o1.getClass().getName() == className;
 
     }
@@ -365,7 +365,7 @@ public class SwipeBackLayout extends FrameLayout {
         public int clampViewPositionHorizontal(View child, int left, int dx) {
             int leftBounds;
             int rightBounds;
-            if (isAllowDragDirection(LEFT) && !childCanScrollRight() && left >= 0 &&  mCurDragDirection == LEFT) {
+            if (isAllowDragDirection(LEFT) && !childCanScrollRight() && left >= 0 && mCurDragDirection == LEFT) {
                 leftBounds = getPaddingLeft();
                 rightBounds = mHorizontalDragRange;
                 if (null != mOnSwipeBackCallback
@@ -397,16 +397,16 @@ public class SwipeBackLayout extends FrameLayout {
          * clampViewPositionHorizontal()之后调用
          */
         @Override
-        public int clampViewPositionVertical(final View child,final int top, final int dy) {
+        public int clampViewPositionVertical(final View child, final int top, final int dy) {
             if (mScrollChild instanceof ViewPager) {
                 final ViewPager pager = (ViewPager) mScrollChild;
-                    mScrollChild = pager.getChildAt(pager.getCurrentItem());
+                mScrollChild = pager.getChildAt(pager.getCurrentItem());
                 final int cacheCount = pager.getChildCount();
                 int[] points = new int[2];
                 for (int i = 0; i < cacheCount; i++) {
                     View view = pager.getChildAt(i);
                     view.getLocationInWindow(points);
-                    if ( mTouchX >= points[0] && mTouchX <points[0]+view.getWidth()) {
+                    if (mTouchX >= points[0] && mTouchX < points[0] + view.getWidth()) {
                         mScrollChild = view;
                         break;
                     }
@@ -531,7 +531,7 @@ public class SwipeBackLayout extends FrameLayout {
     }
 
 
-    float downX ;
+    float downX;
     float downY;
 
     /**
@@ -543,22 +543,22 @@ public class SwipeBackLayout extends FrameLayout {
         mTouchX = ev.getRawX();
         mTouchY = ev.getRawY();
         if (isEnabled()) {
-            if (mCurDragDirection == 0){
-                switch (ev.getAction()){
+            if (mCurDragDirection == 0) {
+                switch (ev.getAction()) {
                     case MotionEvent.ACTION_DOWN:
                         downX = mTouchX;
                         downY = mTouchY;
                         break;
                     case MotionEvent.ACTION_MOVE:
-                        float slope = (mTouchY - downY)/(mTouchX - downX);
-                        mCurDragDirection = Math.abs(slope) >= 1 ? (mTouchY > downY? UP :DOWN ): (mTouchX > downX ? LEFT :RIGHT );
+                        float slope = (mTouchY - downY) / (mTouchX - downX);
+                        mCurDragDirection = Math.abs(slope) >= 1 ? (mTouchY > downY ? UP : DOWN) : (mTouchX > downX ? LEFT : RIGHT);
                         break;
                 }
             }
 
-            if ( mContentView instanceof ViewGroup){
+            if (mContentView instanceof ViewGroup) {
                 findScrollView((ViewGroup) mContentView);
-            }else mScrollChild = mContentView;
+            } else mScrollChild = mContentView;
             handled = null != mContentView && mViewDragHelper.shouldInterceptTouchEvent(ev);
         } else {
             mViewDragHelper.cancel();
@@ -610,7 +610,7 @@ public class SwipeBackLayout extends FrameLayout {
          * @param direction
          * @return boolean 是否拦截该方向
          */
-        boolean onIntercept(@DragDirection int direction,float touchX, float touchY);
+        boolean onIntercept(@DragDirection int direction, float touchX, float touchY);
 
         /**
          * @param fraction relative to the anchor.
