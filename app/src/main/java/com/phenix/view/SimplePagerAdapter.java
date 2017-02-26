@@ -3,6 +3,7 @@ package com.phenix.view;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.view.ViewGroup;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -25,6 +26,11 @@ public class SimplePagerAdapter extends FragmentPagerAdapter {
         super(fm);
         this.classes = new ArrayList<>();
         this.classes.addAll(Arrays.asList(classes));
+    }
+
+    @Override
+    public void setPrimaryItem(ViewGroup container, int position, Object object) {
+        super.setPrimaryItem(container, position, object);
     }
 
     @Override

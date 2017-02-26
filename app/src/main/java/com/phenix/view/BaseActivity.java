@@ -21,7 +21,7 @@ public abstract class BaseActivity extends AppCompatActivity {
 
     @Override
     public void setContentView(View view) {
-        SwipeBackLayout swipeBackLayout = new SwipeBackLayout(this, view, SwipeBackLayout.UP | SwipeBackLayout.LEFT);
+        SwipeBackLayout swipeBackLayout = new SwipeBackLayout(this, view, SwipeBackLayout.UP | SwipeBackLayout.LEFT | SwipeBackLayout.RIGHT | SwipeBackLayout.DOWN);
         swipeBackLayout.setOnSwipeBackListener(new SwipeBackLayout.OnSwipeBackListener() {
             @Override
             public boolean onIntercept(@SwipeBackLayout.DragDirection int direction, float x, float y) {

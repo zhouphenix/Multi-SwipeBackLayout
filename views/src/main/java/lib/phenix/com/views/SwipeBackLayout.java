@@ -11,7 +11,6 @@ import android.support.v4.widget.NestedScrollView;
 import android.support.v4.widget.ViewDragHelper;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -287,8 +286,8 @@ public class SwipeBackLayout extends FrameLayout {
                         || isInstanceOfClass(child , NestedScrollView.class.getName())
                         || isInstanceOfClass(child , RecyclerView.class.getName())
                         || child instanceof HorizontalScrollView
-                        || isInstanceOfClass(child , ViewPager.class.getName())
-                        || isInstanceOfClass(child , WebView.class.getName())){
+                        || child instanceof ViewPager
+                        || child instanceof WebView){
                     mScrollChild = child;
                     break;
                 }else if (child instanceof ViewGroup){
@@ -343,20 +342,17 @@ public class SwipeBackLayout extends FrameLayout {
          */
         @Override
         public boolean tryCaptureView(View child, int pointerId) {
-            Log.e("phenix", "+++++++++++tryCaptureView");
             return child == mContentView && enableSwipeBack;
         }
 
 
         @Override
         public int getViewHorizontalDragRange(View child) {
-            Log.e("phenix", "+++++++++++getViewHorizontalDragRange");
             return mHorizontalDragRange;
         }
 
         @Override
         public int getViewVerticalDragRange(View child) {
-            Log.e("phenix", "+++++++++++getViewVerticalDragRange");
             return mVerticalDragRange;
         }
 
@@ -367,10 +363,9 @@ public class SwipeBackLayout extends FrameLayout {
          */
         @Override
         public int clampViewPositionHorizontal(View child, int left, int dx) {
-            Log.e("phenix", "+++++++++++clampViewPositionHorizontal");
-            int leftBounds = 0;
-            int rightBounds = 0;
-            if (isAllowDragDirection(LEFT) && !childCanScrollRight() && left > 0 &&  mCurDragDirection == LEFT) {
+            int leftBounds;
+            int rightBounds;
+            if (isAllowDragDirection(LEFT) && !childCanScrollRight() && left >= 0 &&  mCurDragDirection == LEFT) {
                 leftBounds = getPaddingLeft();
                 rightBounds = mHorizontalDragRange;
                 if (null != mOnSwipeBackCallback
@@ -382,7 +377,7 @@ public class SwipeBackLayout extends FrameLayout {
                 }
                 return Math.min(Math.max(left, leftBounds), rightBounds);
             }
-            if (isAllowDragDirection(RIGHT) && !childCanScrollLeft() && left < 0 && mCurDragDirection == RIGHT) {
+            if (isAllowDragDirection(RIGHT) && !childCanScrollLeft() && left <= 0 && mCurDragDirection == RIGHT) {
                 leftBounds = -mHorizontalDragRange;
                 rightBounds = getPaddingLeft();
                 if (null != mOnSwipeBackCallback
@@ -402,15 +397,28 @@ public class SwipeBackLayout extends FrameLayout {
          * clampViewPositionHorizontal()之后调用
          */
         @Override
-        public int clampViewPositionVertical(View child, int top, int dy) {
-            Log.e("phenix", "+++++++++++clampViewPositionVertical");
-            int topBounds = 0;
-            int bottomBounds = 0;
+        public int clampViewPositionVertical(final View child,final int top, final int dy) {
             if (mScrollChild instanceof ViewPager) {
-                ViewPager pager = (ViewPager) mScrollChild;
-                mScrollChild = pager.getFocusedChild();
+                final ViewPager pager = (ViewPager) mScrollChild;
+                    mScrollChild = pager.getChildAt(pager.getCurrentItem());
+                final int cacheCount = pager.getChildCount();
+                int[] points = new int[2];
+                for (int i = 0; i < cacheCount; i++) {
+                    View view = pager.getChildAt(i);
+                    view.getLocationInWindow(points);
+                    if ( mTouchX >= points[0] && mTouchX <points[0]+view.getWidth()) {
+                        mScrollChild = view;
+                        break;
+                    }
+
+                }
             }
-            if (isAllowDragDirection(UP) && !childCanScrollDown() && top > 0 &&  mCurDragDirection == UP) {
+            int topBounds;
+            int bottomBounds;
+            if (isAllowDragDirection(UP)
+                    && !childCanScrollDown()
+                    && top >= 0
+                    && mCurDragDirection == UP) {
                 topBounds = getPaddingTop();
                 bottomBounds = mVerticalDragRange;
                 if (null != mOnSwipeBackCallback
@@ -422,7 +430,10 @@ public class SwipeBackLayout extends FrameLayout {
                 }
                 return Math.min(Math.max(top, topBounds), bottomBounds);
             }
-            if (isAllowDragDirection(DOWN) && !childCanScrollUp() && top < 0 &&  mCurDragDirection == DOWN) {
+            if (isAllowDragDirection(DOWN)
+                    && !childCanScrollUp()
+                    && top <= 0
+                    && mCurDragDirection == DOWN) {
                 topBounds = -mVerticalDragRange;
                 bottomBounds = getPaddingTop();
                 if (null != mOnSwipeBackCallback
@@ -434,7 +445,6 @@ public class SwipeBackLayout extends FrameLayout {
                 }
                 return Math.min(Math.max(top, topBounds), bottomBounds);
             }
-
             return mOriginalY;
         }
 
@@ -519,6 +529,8 @@ public class SwipeBackLayout extends FrameLayout {
 
 
     }
+
+
     float downX ;
     float downY;
 

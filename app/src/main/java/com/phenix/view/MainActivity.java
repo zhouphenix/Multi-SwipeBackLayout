@@ -14,7 +14,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
+import com.phenix.view.fragments.BlankFragment;
 import com.phenix.view.fragments.ItemFragment;
+import com.phenix.view.fragments.ScrollViewFragment;
 import com.phenix.view.fragments.dummy.DummyContent;
 
 import lib.phenix.com.views.SwipeBackLayout;
@@ -51,12 +53,27 @@ public class MainActivity extends BaseActivity
         navigationView.setNavigationItemSelectedListener(this);
 
         viewPager = (ViewPager) findViewById(R.id.viewPager);
-        pagerAdapter = new SimplePagerAdapter(getSupportFragmentManager(), ItemFragment.class,ItemFragment.class,ItemFragment.class,ItemFragment.class,ItemFragment.class,ItemFragment.class);
+        pagerAdapter = new SimplePagerAdapter(getSupportFragmentManager(), ItemFragment.class,BlankFragment.class,ScrollViewFragment.class,ItemFragment.class,ScrollViewFragment.class,ItemFragment.class);
         viewPager.setAdapter(pagerAdapter);
+        viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
+            }
+        });
 
         tabLayout = (TabLayout) findViewById(R.id.tabLayout);
         tabLayout.setupWithViewPager(viewPager);
-        viewPager.setCurrentItem(0);
     }
 
     @Override
