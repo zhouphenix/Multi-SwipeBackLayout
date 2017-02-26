@@ -6,6 +6,7 @@
 **_2017-2-26_**
  * 对ViewPager中多种View，如ScrollView、非滚动视图做了适配
  * 使用说明
+ * 配置依赖，发布到JitPack
 
 
 ## download
