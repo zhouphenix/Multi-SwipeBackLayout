@@ -2,6 +2,8 @@
 多方向支持SwipeBackLayout
 
 ## 更新
+**_2017-2-28_**
+ * 【BUG】Activity无法返回BUG >>提交及解决
 
 **_2017-2-26_**
  * 对ViewPager中多种View，如ScrollView、非滚动视图做了适配
@@ -18,7 +20,7 @@
 	}
     -----------------------------------------------------------
     dependencies {
-	        compile 'com.github.zhouphenix:Multi-SwipeBackLayout:1.0.1'
+	        compile 'com.github.zhouphenix:Multi-SwipeBackLayout:1.0.2'
 	}
 ## exclude
     compile 'com.android.support:recyclerview-v7:25.2.0'
