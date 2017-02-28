@@ -11,6 +11,8 @@ import android.support.v4.widget.NestedScrollView;
 import android.support.v4.widget.ViewDragHelper;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
+import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -73,12 +75,13 @@ public class SwipeBackLayout extends FrameLayout {
     /**
      * 定义代表方向的常量
      */
-    public static final int LEFT = 1 << 0;
+    public static final int NONE = 0;
+    public static final int LEFT = 1;
     public static final int UP = 1 << 1;
     public static final int RIGHT = 1 << 2;
     public static final int DOWN = 1 << 3;
 
-    @IntDef({LEFT, UP, RIGHT, DOWN})
+    @IntDef({NONE,LEFT, UP, RIGHT, DOWN})
     @Retention(RetentionPolicy.SOURCE)
     public @interface DragDirection {
     }
@@ -90,7 +93,7 @@ public class SwipeBackLayout extends FrameLayout {
     /**
      * 当前drag方向
      */
-    int mCurDragDirection;
+    @DragDirection int mCurDragDirection;
 
     /**
      * View 拖拽帮助类
@@ -175,11 +178,16 @@ public class SwipeBackLayout extends FrameLayout {
         //①获取ViewDragHelper的实例
         mViewDragHelper = ViewDragHelper.create(this, 1.0f, new ViewDragHelperCallback());
         TypedArray ta = context.obtainStyledAttributes(attrs, R.styleable.SwipeBackLayout);
-        mDragDirectionMask = ta.getInt(R.styleable.SwipeBackLayout_dragDirection, LEFT);
+        mDragDirectionMask = ta.getInt(R.styleable.SwipeBackLayout_dragDirection, NONE);
         mShadowColor = ta.getColor(R.styleable.SwipeBackLayout_shadowColor, mShadowColor);
+        int contentLayoutId = ta.getResourceId(R.styleable.SwipeBackLayout_contentView,View.NO_ID);
         ta.recycle();
 
         addShadowView(context);
+        if (View.NO_ID != contentLayoutId){
+            mContentView = LayoutInflater.from(context).inflate(contentLayoutId, this, false);
+            addView(mContentView);
+        }
         enableSwipeBack = true;
     }
 
@@ -266,6 +274,8 @@ public class SwipeBackLayout extends FrameLayout {
         super.onFinishInflate();
         if (null == mContentView && getChildCount() > 0) {
             mContentView = getChildAt(getChildCount() - 1);
+        }else{
+            throw new IllegalStateException("请为您的SwipeBackLayout添加一个View或xml布局文件");
         }
 
     }
@@ -296,7 +306,6 @@ public class SwipeBackLayout extends FrameLayout {
             }
         }
         if (mScrollChild == null) mScrollChild = target;
-//        Log.e("zhou", "mScroolChild=="+mScrollChild.getClass().getName());
     }
 
 
@@ -330,6 +339,13 @@ public class SwipeBackLayout extends FrameLayout {
         }
     }
 
+    @Override
+    protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
+        super.onLayout(changed, left, top, right, bottom);
+        mOriginalX =  mContentView.getLeft();
+        mOriginalY =  mContentView.getTop();
+    }
+
     /**
      * ②继承ViewDragHelper.Callback类
      * 拖拽回调
@@ -342,6 +358,7 @@ public class SwipeBackLayout extends FrameLayout {
          */
         @Override
         public boolean tryCaptureView(View child, int pointerId) {
+            Log.e("zhou","============tryCaptureView=============="+(mContentView==child));
             return child == mContentView && enableSwipeBack;
         }
 
@@ -365,26 +382,26 @@ public class SwipeBackLayout extends FrameLayout {
         public int clampViewPositionHorizontal(View child, int left, int dx) {
             int leftBounds;
             int rightBounds;
-            if (isAllowDragDirection(LEFT) && !childCanScrollRight() && left >= 0 && mCurDragDirection == LEFT) {
+            if (isAllowDragDirection(LEFT) && !childCanScrollRight() && left >= mOriginalX && mCurDragDirection == LEFT) {
                 leftBounds = getPaddingLeft();
                 rightBounds = mHorizontalDragRange;
                 if (null != mOnSwipeBackCallback
                         && mOnSwipeBackCallback.onIntercept(mCurDragDirection, mTouchX, mTouchY)
-                        && mCurDragDirection != 0
+                        && mCurDragDirection != NONE
                         ) {
-                    mCurDragDirection = 0;
+                    mCurDragDirection = NONE;
                     return mOriginalX;
                 }
                 return Math.min(Math.max(left, leftBounds), rightBounds);
             }
-            if (isAllowDragDirection(RIGHT) && !childCanScrollLeft() && left <= 0 && mCurDragDirection == RIGHT) {
+            if (isAllowDragDirection(RIGHT) && !childCanScrollLeft() && left <= mOriginalX && mCurDragDirection == RIGHT) {
                 leftBounds = -mHorizontalDragRange;
                 rightBounds = getPaddingLeft();
                 if (null != mOnSwipeBackCallback
                         && mOnSwipeBackCallback.onIntercept(mCurDragDirection, mTouchX, mTouchY)
-                        && mCurDragDirection != 0
+                        && mCurDragDirection != NONE
                         ) {
-                    mCurDragDirection = 0;
+                    mCurDragDirection = NONE;
                     return mOriginalX;
                 }
                 return Math.min(Math.max(left, leftBounds), rightBounds);
@@ -417,30 +434,30 @@ public class SwipeBackLayout extends FrameLayout {
             int bottomBounds;
             if (isAllowDragDirection(UP)
                     && !childCanScrollDown()
-                    && top >= 0
+                    && top >= mOriginalY
                     && mCurDragDirection == UP) {
                 topBounds = getPaddingTop();
                 bottomBounds = mVerticalDragRange;
                 if (null != mOnSwipeBackCallback
                         && mOnSwipeBackCallback.onIntercept(mCurDragDirection, mTouchX, mTouchY)
-                        && mCurDragDirection != 0
+                        && mCurDragDirection != NONE
                         ) {
-                    mCurDragDirection = 0;
+                    mCurDragDirection = NONE;
                     return mOriginalY;
                 }
                 return Math.min(Math.max(top, topBounds), bottomBounds);
             }
             if (isAllowDragDirection(DOWN)
                     && !childCanScrollUp()
-                    && top <= 0
+                    && top <= mOriginalY
                     && mCurDragDirection == DOWN) {
                 topBounds = -mVerticalDragRange;
                 bottomBounds = getPaddingTop();
                 if (null != mOnSwipeBackCallback
                         && mOnSwipeBackCallback.onIntercept(mCurDragDirection, mTouchX, mTouchY)
-                        && mCurDragDirection != 0
+                        && mCurDragDirection != NONE
                         ) {
-                    mCurDragDirection = 0;
+                    mCurDragDirection = NONE;
                     return mOriginalY;
                 }
                 return Math.min(Math.max(top, topBounds), bottomBounds);
@@ -452,16 +469,13 @@ public class SwipeBackLayout extends FrameLayout {
         @Override
         public void onViewPositionChanged(View changedView, int left, int top, int dx, int dy) {
             super.onViewPositionChanged(changedView, left, top, dx, dy);
-            mDragOffset = mCurDragDirection == LEFT || mCurDragDirection == RIGHT ? Math.abs(left) : Math.abs(top);
-            final float fraction = mDragOffset * 1.0f / getDragRange();
+            mDragOffset = dx != 0 ? Math.abs(left) : Math.abs(top);
+            Log.e("zhou",mCurDragDirection+"===="+dx+"======onViewPositionChanged======"+dy+"====="+mDragOffset);
+            final float fraction = mDragOffset * 1.0f / (dx != 0 ? mHorizontalDragRange : mVerticalDragRange);
             mShadowView.setAlpha(1 - fraction);
             if (null != mOnSwipeBackCallback) {
                 mOnSwipeBackCallback.onViewPositionChanged(fraction);
             }
-        }
-
-        private int getDragRange() {
-            return mCurDragDirection == LEFT || mCurDragDirection == RIGHT ? mHorizontalDragRange : mVerticalDragRange;
         }
 
         @Override
@@ -481,10 +495,13 @@ public class SwipeBackLayout extends FrameLayout {
 
             if ((mLastDragState == ViewDragHelper.STATE_DRAGGING || mLastDragState == ViewDragHelper.STATE_SETTLING)
                     && state == ViewDragHelper.STATE_IDLE) {
-                if (null != mOnSwipeBackCallback && mDragOffset == getDragRange())
+                if (null != mOnSwipeBackCallback && (mContentView.getLeft() != mOriginalX || mContentView.getTop() != mOriginalY )){
                     mOnSwipeBackCallback.onAnimationEnd();
+                }
+
             }
-            if (state == ViewDragHelper.STATE_IDLE) mCurDragDirection = 0;
+            if (state == ViewDragHelper.STATE_IDLE) mCurDragDirection = NONE;
+            Log.e("zhou","------onViewDragStateChanged----------"+state);
             mLastDragState = state;
         }
 
@@ -543,7 +560,7 @@ public class SwipeBackLayout extends FrameLayout {
         mTouchX = ev.getRawX();
         mTouchY = ev.getRawY();
         if (isEnabled()) {
-            if (mCurDragDirection == 0) {
+            if (mCurDragDirection == NONE) {
                 switch (ev.getAction()) {
                     case MotionEvent.ACTION_DOWN:
                         downX = mTouchX;
@@ -554,17 +571,18 @@ public class SwipeBackLayout extends FrameLayout {
                         mCurDragDirection = Math.abs(slope) >= 1 ? (mTouchY > downY ? UP : DOWN) : (mTouchX > downX ? LEFT : RIGHT);
                         break;
                 }
+                if (mContentView instanceof ViewGroup) {
+                    findScrollView((ViewGroup) mContentView);
+                } else mScrollChild = mContentView;
             }
+//            Log.e("zhou", "-------mCurDragDirection-------------"+mCurDragDirection);
 
-            if (mContentView instanceof ViewGroup) {
-                findScrollView((ViewGroup) mContentView);
-            } else mScrollChild = mContentView;
-            handled = null != mContentView && mViewDragHelper.shouldInterceptTouchEvent(ev);
+            handled = mViewDragHelper.shouldInterceptTouchEvent(ev) ;
         } else {
             mViewDragHelper.cancel();
         }
         if (!handled) {
-            mCurDragDirection = 0;
+            mCurDragDirection = NONE;
             mScrollChild = mContentView;
         }
         return handled || super.onInterceptTouchEvent(ev);
