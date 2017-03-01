@@ -35,9 +35,15 @@
 
 **step3** 如下例子中的代码，或者你可以通过xml配置使用
 
-            app:contentView="@layout/..."
+        <lib.phenix.com.views.SwipeBackLayout
+            app:contentView="@layout/..."//主布局也可以直接加在节点内
             app:shadowColor="@color| #ffffff"
             app:dragDirection="left|up|right|down"
+            ...
+            >
+            <!--主布局, 优先级弱于设置属性-->
+            ...
+        </lib.phenix.com.views.SwipeBackLayout>
 
 
 ## 例子
